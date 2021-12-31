@@ -54,3 +54,5 @@ window.jQuery = function (selectorOrArray) {
         },
     }
 }
+
+window.$ = window.jQuery
