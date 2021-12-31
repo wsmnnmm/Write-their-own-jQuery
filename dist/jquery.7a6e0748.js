@@ -130,67 +130,122 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToAr
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-window.jQuery = function (selectorOrArray) {
+window.$ = window.jQuery = function (selectorOrArrayOrTemplate) {
   var elements;
 
-  if (typeof selectorOrArray === 'string') {
-    elements = document.querySelectorAll(selectorOrArray);
-  } else if (selectorOrArray instanceof Array) {
-    elements = selectorOrArray;
-  } //api 可以操作elements
-
-
-  return {
-    find: function find(selector) {
-      var array = [];
-
-      for (var i = 0; i < elements.length; i++) {
-        var elements2 = Array.from(elements[i].querySelectorAll(selector));
-        array = array.concat(elements2); //querySelectorAll查找的是伪数组
-      }
-
-      array.oldApi = this; //this 就是 api
-
-      return jQuery(array);
-    },
-    each: function each(fn) {
-      for (var i = 0; i < elements.length; i++) {
-        fn.call(null, elements[i], i);
-      }
-
-      return this;
-    },
-    parent: function parent() {
-      var array = [];
-      this.each(function (node) {
-        if (array.indexOf(node.parentNode) === -1) {
-          array.push(node.parentNode);
-        }
-      });
-      return jQuery(array);
-    },
-    children: function children() {
-      var array = [];
-      this.each(function (node) {
-        array.push.apply(array, _toConsumableArray(node.children));
-      });
-      return jQuery(array);
-    },
-    print: function print() {
-      console.log(elements); //parent()调用jQuery的形参传进来的elements
-    },
-    addClass: function addClass(className) {
-      for (var i = 0; i < elements.length; i++) {
-        elements[i].classList.add(className);
-      }
-
-      return this;
-    },
-    oldApi: selectorOrArray.oldApi,
-    end: function end() {
-      return this.oldApi;
+  if (typeof selectorOrArrayOrTemplate === "string") {
+    if (selectorOrArrayOrTemplate[0] === "<") {
+      // 创建 div
+      elements = [createElement(selectorOrArrayOrTemplate)];
+    } else {
+      // 查找 div
+      elements = document.querySelectorAll(selectorOrArrayOrTemplate);
     }
-  };
+  } else if (selectorOrArrayOrTemplate instanceof Array) {
+    elements = selectorOrArrayOrTemplate;
+  }
+
+  function createElement(string) {
+    var container = document.createElement("template");
+    container.innerHTML = string.trim();
+    return container.content.firstChild;
+  } // api 可以操作elements
+
+
+  var api = Object.create(jQuery.prototype); // 创建一个对象，这个对象的 __proto__ 为括号里面的东西
+  // const api = {__proto__: jQuery.prototype}
+
+  Object.assign(api, {
+    elements: elements,
+    oldApi: selectorOrArrayOrTemplate.oldApi
+  }); // api.elements = elements
+  // api.oldApi = selectorOrArrayOrTemplate.oldApi
+
+  return api;
+};
+
+jQuery.fn = jQuery.prototype = {
+  constructor: jQuery,
+  jquery: true,
+  get: function get(index) {
+    return this.elements[index];
+  },
+  appendTo: function appendTo(node) {
+    if (node instanceof Element) {
+      this.each(function (el) {
+        return node.appendChild(el);
+      });
+    } else if (node.jquery === true) {
+      this.each(function (el) {
+        return node.get(0).appendChild(el);
+      });
+    }
+  },
+  append: function append(children) {
+    var _this = this;
+
+    if (children instanceof Element) {
+      this.get(0).appendChild(children);
+    } else if (children instanceof HTMLCollection) {
+      for (var i = 0; i < children.length; i++) {
+        this.get(0).appendChild(children[i]);
+      }
+    } else if (children.jquery === true) {
+      children.each(function (node) {
+        return _this.get(0).appendChild(node);
+      });
+    }
+  },
+  find: function find(selector) {
+    var array = [];
+
+    for (var i = 0; i < this.elements.length; i++) {
+      var elements2 = Array.from(this.elements[i].querySelectorAll(selector));
+      array = array.concat(elements2);
+    }
+
+    array.oldApi = this; // this 就是 旧 api
+
+    return jQuery(array);
+  },
+  each: function each(fn) {
+    for (var i = 0; i < this.elements.length; i++) {
+      fn.call(null, this.elements[i], i);
+    }
+
+    return this;
+  },
+  parent: function parent() {
+    var array = [];
+    this.each(function (node) {
+      if (array.indexOf(node.parentNode) === -1) {
+        array.push(node.parentNode);
+      }
+    });
+    return jQuery(array);
+  },
+  children: function children() {
+    var array = [];
+    this.each(function (node) {
+      array.push.apply(array, _toConsumableArray(node.children)); // ... 扩展运算符 把装node的孩子数组一个个分开
+    });
+    return jQuery(array);
+  },
+  print: function print() {
+    console.log(this.elements);
+  },
+  // 闭包：函数访问外部的变量
+  addClass: function addClass(className) {
+    for (var i = 0; i < this.elements.length; i++) {
+      var element = this.elements[i];
+      element.classList.add(className);
+    }
+
+    return this;
+  },
+  end: function end() {
+    return this.oldApi; // this 就是新 api
+  }
 };
 },{}],"C:/Users/Huerf/AppData/Local/Yarn/Data/global/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -220,7 +275,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63364" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65088" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
