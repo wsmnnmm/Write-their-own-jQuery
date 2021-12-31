@@ -81,7 +81,7 @@ jQuery.fn = jQuery.prototype = {
         const array = [];
         this.each(node => {
             array.push(...node.children)
-            // ... 扩展运算符 把装node的孩子数组一个个分开
+            // ... 扩展运算符 把装node的孩子的数组一个个分开
         });
         return jQuery(array);
     },
