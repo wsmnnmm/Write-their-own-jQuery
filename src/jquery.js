@@ -1,4 +1,4 @@
-window.jQuery = function (selectorOrArray) {
+window.$ = window.jQuery = function (selectorOrArray) {
     let elements
     if (typeof selectorOrArray === 'string') {
         elements = document.querySelectorAll(selectorOrArray)
@@ -55,4 +55,3 @@ window.jQuery = function (selectorOrArray) {
     }
 }
 
-window.$ = window.jQuery
